@@ -1,0 +1,1020 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <base target="_top">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PawnMe Admin</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Inter', sans-serif; background: #f8fafc; margin: 0; padding: 0; overflow-x: hidden; }
+    .fade-in { animation: fadeIn 0.3s ease-in; }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    .custom-scroll::-webkit-scrollbar { width: 6px; }
+    .custom-scroll::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 3px; }
+    #login-screen { position: fixed !important; top: 0 !important; left: 0 !important; width: 100vw !important; height: 100vh !important; }
+  </style>
+</head>
+<body class="text-slate-800">
+
+  <!-- LOGIN SCREEN -->
+  <div id="login-screen" class="fixed inset-0 w-full h-full relative overflow-hidden">
+    <div class="absolute inset-0 bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950"></div>
+    <div class="absolute -top-24 -left-24 w-96 h-96 bg-indigo-600/30 blur-3xl rounded-full"></div>
+    <div class="absolute -bottom-24 -right-24 w-96 h-96 bg-emerald-500/20 blur-3xl rounded-full"></div>
+
+    <div class="relative z-10 min-h-screen flex items-center justify-center p-6">
+      <div class="w-full max-w-5xl grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div class="hidden lg:flex flex-col justify-center px-2">
+          <div class="text-white">
+            <div class="flex items-center gap-3 mb-6">
+              <div class="w-12 h-12 bg-white/10 rounded-2xl flex items-center justify-center text-white font-bold text-lg border border-white/10">P</div>
+              <div>
+                <div class="text-2xl font-bold">PawnMe</div>
+                <div class="text-sm text-white/70">Operations Dashboard</div>
+              </div>
+            </div>
+            <div class="text-4xl font-bold leading-tight">Manage loans, collateral, liquidation and inventory — in one place.</div>
+            <div class="mt-4 text-white/70">Fast search, role-based actions, and clear profit/loss reporting.</div>
+          </div>
+        </div>
+
+        <div class="flex items-center">
+          <div class="w-full max-w-md mx-auto bg-white/95 backdrop-blur rounded-3xl shadow-2xl border border-white/20 p-6">
+            <div class="flex items-center gap-3 mb-6">
+              <div class="w-11 h-11 bg-indigo-600 rounded-2xl flex items-center justify-center text-white font-bold text-lg">P</div>
+              <div>
+                <div class="text-xl font-bold">Sign in</div>
+                <div class="text-sm text-slate-500">Vault Admin</div>
+              </div>
+            </div>
+
+            <div class="space-y-4">
+              <div>
+                <label class="block text-xs font-bold text-slate-500 mb-1">Email</label>
+                <input id="loginEmail" type="email" class="w-full p-3 border rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="you@company.com" autocomplete="username" />
+              </div>
+              <div>
+                <label class="block text-xs font-bold text-slate-500 mb-1">Password</label>
+                <div class="relative">
+                  <input id="loginPass" type="password" class="w-full p-3 pr-16 border rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="••••••••" autocomplete="current-password" />
+                  <button type="button" onclick="toggleLoginPassword()" class="absolute right-2 top-1/2 -translate-y-1/2 px-3 py-2 text-xs font-bold text-slate-500 hover:text-slate-900">Show</button>
+                </div>
+              </div>
+
+              <button id="loginBtn" onclick="handleLogin()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-2xl">Login</button>
+              <div class="text-xs text-slate-500">Default password: <span class="font-mono">admin123</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="app-container" class="hidden h-screen flex w-full relative">
+    
+    <aside id="sidebar" class="bg-slate-900 w-64 flex-shrink-0 flex flex-col transition-transform duration-300 absolute lg:relative z-30 h-full -translate-x-full lg:translate-x-0">
+      <div class="h-16 flex items-center px-6 border-b border-slate-800 font-bold text-white text-lg">
+        <span class="text-indigo-500 mr-2">▪</span> PawnMe
+        <button onclick="toggleSidebar()" class="ml-auto lg:hidden text-slate-500">✕</button>
+      </div>
+      <nav class="flex-1 p-4 space-y-2">
+        <button onclick="switchView('dashboard')" id="nav-dashboard" class="w-full text-left px-4 py-3 text-sm font-medium rounded-xl text-white bg-slate-800">📊 Dashboard</button>
+        <button onclick="switchView('vault')" id="nav-vault" class="w-full text-left px-4 py-3 text-sm font-medium rounded-xl text-slate-400 hover:text-white">📦 Vault</button>
+        <button onclick="switchView('pending')" id="nav-pending" class="w-full text-left px-4 py-3 text-sm font-medium rounded-xl text-slate-400 hover:text-white">📥 Pending</button>
+        <button onclick="switchView('settings')" id="nav-settings" class="w-full text-left px-4 py-3 text-sm font-medium rounded-xl text-slate-400 hover:text-white">⚙️ Settings</button>
+        <button onclick="openModal('loanModal')" class="w-full mt-6 bg-indigo-600 hover:bg-indigo-700 text-white py-3 rounded-xl font-bold text-sm">＋ New Loan</button>
+      </nav>
+      <div class="p-4 border-t border-slate-800 text-slate-500 text-xs">
+        <div id="user-email" class="text-white text-sm mb-1"></div>
+        <div id="user-role" class="font-bold text-indigo-400 mb-2"></div>
+        <button onclick="logout()" class="w-full text-left hover:text-white">Sign Out</button>
+      </div>
+    </aside>
+
+    <div class="flex-1 flex flex-col h-full overflow-hidden relative">
+      <header class="h-16 bg-white border-b flex items-center justify-between px-6 z-20">
+        <div class="flex items-center gap-3">
+            <button onclick="toggleSidebar()" class="lg:hidden text-slate-500">☰</button>
+            <h1 id="page-title" class="font-bold text-lg">Overview</h1>
+        </div>
+        <div class="flex gap-2">
+            <input type="text" id="globalSearch" onkeyup="filterTable()" placeholder="Search..." class="bg-slate-100 border-none rounded-lg px-3 py-1.5 text-sm w-48">
+            <button onclick="refreshData()" class="p-2 bg-slate-100 rounded-lg hover:bg-slate-200">↻</button>
+        </div>
+      </header>
+
+      <main class="flex-1 overflow-y-auto p-6 scroll-smooth bg-slate-50 custom-scroll">
+        
+        <!-- DASHBOARD VIEW -->
+        <div id="view-dashboard" class="space-y-6 max-w-7xl mx-auto pb-20 fade-in">
+          <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+              <div class="text-xs font-bold text-slate-400 uppercase">Exposure</div>
+              <div class="text-2xl font-bold text-slate-900 mt-1" id="stat-active">...</div>
+            </div>
+            <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+              <div class="text-xs font-bold text-slate-400 uppercase">Net Profit</div>
+              <div class="text-2xl font-bold text-emerald-600 mt-1" id="stat-profit">...</div>
+              <div class="text-xs text-emerald-600 mt-1 font-bold" id="stat-weekly-gain"></div>
+            </div>
+            <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+              <div class="text-xs font-bold text-slate-400 uppercase">Booked Loss</div>
+              <div class="text-2xl font-bold text-red-600 mt-1" id="stat-loss">...</div>
+              <div class="text-xs text-red-500 mt-1 font-bold" id="stat-weekly-loss"></div>
+            </div>
+            <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+              <div class="text-xs font-bold text-slate-400 uppercase">Inventory</div>
+              <div class="text-2xl font-bold text-slate-900 mt-1" id="stat-inventory">...</div>
+              <div class="text-xs text-slate-500 mt-1" id="stat-vault-value"></div>
+            </div>
+          </div>
+
+          <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+            <table class="w-full text-left text-sm">
+               <thead class="bg-slate-50 text-slate-500 font-bold border-b">
+                 <tr>
+                   <th class="px-6 py-4">Loan</th>
+                   <th class="px-6 py-4">Customer</th>
+                   <th class="px-6 py-4">Item</th>
+                   <th class="px-6 py-4">Financials</th>
+                   <th class="px-6 py-4">Status</th>
+                   <th class="px-6 py-4 text-right">Actions</th>
+                 </tr>
+               </thead>
+               <tbody id="loan-table" class="divide-y divide-slate-100"></tbody>
+            </table>
+            <div id="empty-loans" class="hidden p-8 text-center text-slate-400">No active loans.</div>
+          </div>
+        </div>
+
+        <!-- VAULT INVENTORY VIEW -->
+        <div id="view-vault" class="hidden space-y-6 max-w-7xl mx-auto fade-in">
+           <div class="flex justify-between items-center">
+             <div class="bg-indigo-50 border border-indigo-100 rounded-xl p-4 text-indigo-800 text-sm font-medium">Physical Assets in Vault</div>
+             <div class="text-right">
+               <div class="text-xs text-slate-400">Total Est. Value</div>
+               <div id="vault-total-value" class="text-2xl font-bold text-indigo-600">₺0</div>
+             </div>
+           </div>
+           <div class="grid grid-cols-1 md:grid-cols-3 gap-4" id="vault-grid"></div>
+        </div>
+
+        <!-- PENDING VIEW -->
+        <div id="view-pending" class="hidden space-y-6 max-w-7xl mx-auto fade-in">
+           <div class="bg-indigo-50 border border-indigo-100 rounded-xl p-4 text-indigo-800 text-sm font-medium">Pending Applications Queue</div>
+           <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+             <table class="w-full text-left text-sm">
+               <thead class="bg-slate-50 text-slate-500 font-bold border-b">
+                 <tr>
+                   <th class="px-6 py-4">Applicant</th>
+                   <th class="px-6 py-4">Item</th>
+                   <th class="px-6 py-4">Requested</th>
+                   <th class="px-6 py-4 text-right">Review</th>
+                 </tr>
+               </thead>
+               <tbody id="pending-table" class="divide-y divide-slate-100"></tbody>
+             </table>
+             <div id="empty-pending" class="hidden p-8 text-center text-slate-400">No pending applications.</div>
+           </div>
+        </div>
+
+        <!-- SETTINGS VIEW -->
+        <div id="view-settings" class="hidden space-y-6 max-w-2xl mx-auto fade-in">
+            <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+                <h3 class="font-bold text-lg mb-4">Security</h3>
+                <div class="space-y-4">
+                    <div>
+                      <label class="block text-xs font-bold text-slate-500 mb-1">New Password</label>
+                      <input type="password" id="newPass" class="w-full p-3 border rounded-xl">
+                    </div>
+                    <button onclick="changePassword()" class="bg-slate-900 text-white px-6 py-2 rounded-xl text-sm font-bold">Update</button>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+                <h3 class="font-bold text-lg mb-4">Manager Access</h3>
+                <div class="space-y-4">
+                    <div>
+                      <label class="block text-xs font-bold text-slate-500 mb-1">Manager Emails (comma-separated)</label>
+                      <textarea id="managerEmails" class="w-full p-3 border rounded-xl h-24" placeholder="admin@example.com, manager@example.com"></textarea>
+                    </div>
+                    <button onclick="updateManagers()" class="bg-indigo-600 text-white px-6 py-2 rounded-xl text-sm font-bold">Save Managers</button>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+                <h3 class="font-bold text-lg mb-2">Public Link</h3>
+                <div class="flex gap-2">
+                    <input type="text" id="publicLink" readonly class="w-full p-3 bg-slate-50 border rounded-xl text-xs font-mono" value="Loading...">
+                    <button onclick="copyLink()" class="bg-indigo-50 text-indigo-600 px-4 py-2 rounded-xl text-sm font-bold">Copy</button>
+                </div>
+            </div>
+        </div>
+
+      </main>
+    </div>
+  </div>
+
+  <!-- MODALS -->
+  <div id="loanModal" class="hidden fixed inset-0 z-50 bg-slate-900/50 flex items-center justify-center p-4">
+    <div class="bg-white w-full max-w-2xl rounded-2xl shadow-2xl p-6 max-h-[85vh] overflow-y-auto custom-scroll">
+      <h3 class="font-bold text-lg mb-4">Create Loan Contract</h3>
+      <form onsubmit="handleCreate(event)" class="space-y-4">
+        <div class="grid grid-cols-2 gap-4">
+          <input name="name" required placeholder="Full Name" class="p-3 border rounded-xl">
+          <input name="nationalId" required placeholder="ID Number" class="p-3 border rounded-xl">
+        </div>
+        <div class="grid grid-cols-2 gap-4">
+          <input name="phone" required placeholder="Phone" class="p-3 border rounded-xl">
+          <input name="email" required placeholder="Email" class="p-3 border rounded-xl">
+        </div>
+        <input name="address" required placeholder="Address" class="w-full p-3 border rounded-xl">
+        <input name="country" required placeholder="Country" class="w-full p-3 border rounded-xl">
+        <div class="grid grid-cols-2 gap-4">
+          <input name="itemType" required placeholder="Item Type" class="p-3 border rounded-xl">
+          <input name="brand" required placeholder="Brand" class="p-3 border rounded-xl">
+        </div>
+        <div class="grid grid-cols-3 gap-4">
+          <input name="serial" placeholder="Serial" class="p-3 border rounded-xl">
+          <input name="condition" required placeholder="Condition" class="p-3 border rounded-xl">
+          <input type="number" name="estValue" placeholder="Est. Value" class="p-3 border rounded-xl">
+        </div>
+        <div class="grid grid-cols-3 gap-4 bg-indigo-50 p-4 rounded-xl">
+           <input type="number" name="amount" required placeholder="Amount" class="p-2 rounded">
+           <input type="number" name="rate" value="15" placeholder="%" class="p-2 rounded">
+           <input type="number" name="duration" value="3" placeholder="Months" class="p-2 rounded">
+        </div>
+        <input type="file" id="evidenceFile" class="w-full text-sm">
+        <div class="flex gap-2 pt-2">
+          <button type="button" onclick="closeModal('loanModal')" class="flex-1 py-3 border rounded-xl font-bold">Cancel</button>
+          <button type="submit" id="btn-create" class="flex-1 py-3 bg-indigo-600 text-white rounded-xl font-bold">Create</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div id="payModal" class="hidden fixed inset-0 z-50 bg-slate-900/50 flex items-center justify-center p-4">
+    <div class="bg-white w-full max-w-sm rounded-2xl shadow-2xl p-6">
+      <h3 class="font-bold text-lg mb-2">Payment</h3>
+      <input type="hidden" id="pay-id">
+      <input type="number" id="pay-amt" placeholder="Amount (₺)" class="w-full p-3 border rounded-xl text-lg font-bold mb-4 text-emerald-600">
+      <button onclick="submitPayment()" class="w-full bg-emerald-600 text-white py-3 rounded-xl font-bold">Confirm</button>
+      <button onclick="closeModal('payModal')" class="w-full mt-2 text-slate-400">Cancel</button>
+    </div>
+  </div>
+
+  <div id="extModal" class="hidden fixed inset-0 z-50 bg-slate-900/50 flex items-center justify-center p-4">
+    <div class="bg-white w-full max-w-sm rounded-2xl shadow-2xl p-6">
+      <h3 class="font-bold text-lg mb-2">Extend</h3>
+      <input type="hidden" id="ext-id">
+      <div class="space-y-3">
+        <input type="number" id="ext-mo" placeholder="Months" class="w-full p-3 border rounded-xl">
+        <input type="number" id="ext-fee" placeholder="Fee" class="w-full p-3 border rounded-xl">
+      </div>
+      <button onclick="submitExtension()" class="w-full mt-4 bg-indigo-600 text-white py-3 rounded-xl font-bold">Extend</button>
+      <button onclick="closeModal('extModal')" class="w-full mt-2 text-slate-400">Cancel</button>
+    </div>
+  </div>
+
+  <div id="sellModal" class="hidden fixed inset-0 z-50 bg-slate-900/50 flex items-center justify-center p-4">
+    <div class="bg-white w-full max-w-sm rounded-2xl shadow-2xl p-6">
+      <h3 class="font-bold text-lg mb-2">Liquidate Asset</h3>
+      <input type="hidden" id="sell-id">
+      <div class="mb-4 p-3 bg-amber-50 rounded-xl text-sm">
+        <div class="font-bold">Principal: <span id="sell-principal"></span></div>
+        <div class="text-slate-600">Paid So Far: <span id="sell-paid"></span></div>
+      </div>
+      <input type="number" id="sell-price" placeholder="Sale Price (₺)" class="w-full p-3 border rounded-xl text-lg font-bold mb-4">
+      <button onclick="submitLiquidation()" class="w-full bg-amber-600 text-white py-3 rounded-xl font-bold">Record Sale</button>
+      <button onclick="closeModal('sellModal')" class="w-full mt-2 text-slate-400">Cancel</button>
+    </div>
+  </div>
+
+  <div id="reviewModal" class="hidden fixed inset-0 z-50 bg-slate-900/50 flex items-center justify-center p-4">
+    <div class="bg-white w-full max-w-sm rounded-2xl shadow-2xl p-6">
+      <h3 class="font-bold text-lg mb-4">Review Offer</h3>
+      <input type="hidden" id="rev-idx">
+      <div class="space-y-3">
+        <label class="text-xs font-bold text-slate-500">Approved Amount</label>
+        <input type="number" id="rev-amt" class="w-full p-3 border rounded-xl font-bold text-indigo-600">
+        <div class="grid grid-cols-2 gap-2">
+          <input type="number" id="rev-rate" class="p-3 border rounded-xl" placeholder="Rate">
+          <input type="number" id="rev-dur" class="p-3 border rounded-xl" placeholder="Months">
+        </div>
+      </div>
+      <button onclick="confirmApproval()" class="w-full mt-4 bg-indigo-600 text-white py-3 rounded-xl font-bold">Approve</button>
+      <button onclick="closeModal('reviewModal')" class="w-full mt-2 text-slate-400">Cancel</button>
+    </div>
+  </div>
+
+  <div id="custModal" class="hidden fixed inset-0 z-50 bg-slate-900/50 flex items-center justify-center p-4">
+    <div class="bg-white w-full max-w-lg rounded-2xl shadow-2xl p-6">
+       <div class="flex justify-between mb-4">
+         <h3 id="cName" class="font-bold text-xl">Customer</h3>
+         <button onclick="closeModal('custModal')">✕</button>
+       </div>
+       <div class="grid grid-cols-3 gap-2 text-center mb-4">
+         <div class="bg-blue-50 p-2 rounded">
+           <div id="cScore" class="font-bold text-blue-600 text-xl"></div>
+           <div class="text-xs">Score</div>
+         </div>
+         <div class="bg-slate-50 p-2 rounded">
+           <div id="cActive" class="font-bold text-xl"></div>
+           <div class="text-xs">Active</div>
+         </div>
+         <div class="bg-slate-50 p-2 rounded">
+           <div id="cDebt" class="font-bold text-xl"></div>
+           <div class="text-xs">Debt</div>
+         </div>
+       </div>
+       <div id="cHistory" class="max-h-40 overflow-y-auto text-sm"></div>
+    </div>
+  </div>
+
+  <div id="qrModal" class="hidden fixed inset-0 z-50 bg-slate-900/50 flex items-center justify-center p-4">
+    <div class="bg-white p-6 rounded-2xl text-center">
+      <div id="qr-code"></div>
+      <p id="qr-text" class="font-bold mt-2"></p>
+      <button onclick="printQr()" class="mt-4 bg-slate-800 text-white px-4 py-2 rounded">Print Label</button>
+      <button onclick="closeModal('qrModal')" class="mt-2 text-slate-400 block w-full">Close</button>
+    </div>
+  </div>
+
+  <script>
+    const fmt = n => new Intl.NumberFormat('tr-TR',{style:'currency',currency:'TRY'}).format(n);
+    let allLoans = [];
+    let userRole = 'Clerk';
+    let sessionToken = '';
+    let userEmail = '';
+    
+    // AUTH & SETUP
+    function handleLogin() { 
+        const password = document.getElementById('loginPass').value;
+        const email = document.getElementById('loginEmail').value;
+        
+        if (!email || !password) {
+          Swal.fire('Error', 'Please enter both email and password', 'warning');
+          return;
+        }
+        
+        google.script.run
+          .withSuccessHandler(response => {
+            if (response.success) {
+              sessionToken = response.sessionToken;
+              userEmail = response.email;
+              userRole = response.role;
+              localStorage.setItem('sessionToken', sessionToken);
+              localStorage.setItem('userEmail', userEmail);
+              localStorage.setItem('userRole', userRole);
+              initApp();
+            } else {
+              Swal.fire('Error', response.message, 'error');
+            }
+          })
+          .withFailureHandler(err => {
+            Swal.fire('Error', 'Login failed: ' + err.message, 'error');
+          })
+          .loginUser(password, email);
+    }
+    
+    function initApp() {
+        document.getElementById('login-screen').classList.add('hidden');
+        document.getElementById('app-container').classList.remove('hidden');
+        document.getElementById('user-email').innerText = userEmail;
+        document.getElementById('user-role').innerText = userRole;
+        refreshData();
+        
+        google.script.run.withSuccessHandler(url => {
+          document.getElementById('publicLink').value = url + "?page=form";
+        }).getScriptUrl();
+        
+        google.script.run.withSuccessHandler(emails => {
+          document.getElementById('managerEmails').value = emails;
+        }).getManagerList(sessionToken);
+    }
+    
+    function changePassword() {
+        const newPass = document.getElementById('newPass').value;
+        google.script.run
+          .withSuccessHandler(r => {
+            if (r.success) {
+              Swal.fire('Success', r.message, 'success');
+              document.getElementById('newPass').value = '';
+            } else {
+              Swal.fire('Error', r.message, 'warning');
+            }
+          })
+          .changePassword(newPass, sessionToken);
+    }
+    
+    function updateManagers() {
+        const emails = document.getElementById('managerEmails').value;
+        google.script.run
+          .withSuccessHandler(r => {
+            if (r.success) {
+              Swal.fire('Success', r.message, 'success');
+              refreshData();
+            } else {
+              Swal.fire('Error', r.message, 'error');
+            }
+          })
+          .updateManagerList(emails, sessionToken);
+    }
+    
+    function copyLink() {
+        const t = document.getElementById("publicLink"); 
+        t.select(); 
+        document.execCommand("copy"); 
+        Swal.fire('Copied!', '', 'success');
+    }
+    
+    function logout() { 
+      localStorage.clear();
+      location.reload(); 
+    }
+
+    // NAV
+    function switchView(v) {
+        ['dashboard','vault','pending','settings'].forEach(id => {
+            document.getElementById(`view-${id}`).classList.add('hidden');
+            document.getElementById(`nav-${id}`).classList.remove('bg-slate-800','text-white');
+            document.getElementById(`nav-${id}`).classList.add('text-slate-400');
+        });
+        document.getElementById(`view-${v}`).classList.remove('hidden');
+        document.getElementById(`nav-${v}`).classList.add('bg-slate-800','text-white');
+        document.getElementById('page-title').innerText = v.charAt(0).toUpperCase() + v.slice(1);
+        
+        if(v==='dashboard') refreshData();
+        if(v==='vault') loadVault();
+        if(v==='pending') loadPending();
+        if(window.innerWidth<1024) toggleSidebar();
+    }
+    
+    function toggleSidebar() { 
+      document.getElementById('sidebar').classList.toggle('-translate-x-full'); 
+    }
+
+    // DASHBOARD
+    function refreshData() { 
+      google.script.run
+        .withSuccessHandler(renderDash)
+        .withFailureHandler(handleSessionError)
+        .getStats(sessionToken); 
+    }
+    
+    function handleSessionError(err) {
+      Swal.fire('Session Expired', 'Please login again', 'warning');
+      logout();
+    }
+    
+    function renderDash(d) {
+        if (d.error) {
+          handleSessionError();
+          return;
+        }
+        
+        userRole = d.userRole || 'Clerk';
+        document.getElementById('user-role').innerText = userRole;
+        
+        document.getElementById('stat-active').innerText = fmt(d.totalLent);
+        document.getElementById('stat-profit').innerText = fmt(d.realizedGain);
+        document.getElementById('stat-weekly-gain').innerText = "+"+fmt(d.weeklyGain);
+        document.getElementById('stat-loss').innerText = fmt(d.bookedLoss);
+        document.getElementById('stat-weekly-loss').innerText = "-"+fmt(d.weeklyLoss);
+        document.getElementById('stat-inventory').innerText = d.inventory;
+        document.getElementById('stat-vault-value').innerText = "Value: " + fmt(d.vaultValue);
+        
+        allLoans = d.loans; 
+        renderTable(allLoans);
+        
+        if(allLoans.length===0) {
+          document.getElementById('empty-loans').classList.remove('hidden');
+        } else {
+          document.getElementById('empty-loans').classList.add('hidden');
+        }
+    }
+    
+    function renderTable(loans) {
+        const tb = document.getElementById('loan-table'); 
+        tb.innerHTML = "";
+        
+        loans.forEach(l => {
+            const badge = l.status==='Active'?'bg-emerald-100 text-emerald-700':
+                         l.status==='Paid'?'bg-blue-100 text-blue-700':
+                         l.status==='Sold'?'bg-purple-100 text-purple-700':
+                         'bg-red-100 text-red-700';
+            
+            let actions = `<button onclick="openQr('${l.id}','${l.itemType}')" class="text-slate-400 hover:text-slate-800 mr-2">🏷️</button>`;
+            
+            if(l.status==='Active') {
+              actions += `<button onclick="openPay('${l.id}')" class="text-emerald-600 font-bold text-xs mr-2">Pay</button>`;
+              actions += `<button onclick="openExt('${l.id}')" class="text-blue-600 font-bold text-xs mr-2">Ext</button>`;
+              if(userRole === 'Manager') {
+                actions += `<button onclick="setStatus('${l.id}','Defaulted')" class="text-red-500 font-bold text-xs">Def</button>`;
+              }
+            }
+            if(l.status==='Defaulted' && userRole === 'Manager') {
+              actions += `<button onclick="openSell('${l.id}',${l.amount},${l.paidSoFar})" class="text-amber-600 font-bold text-xs">Sell</button>`;
+            }
+            
+            tb.innerHTML += `<tr class="border-b hover:bg-indigo-50/30 transition">
+             <td class="px-6 py-4">
+               <div class="font-bold">${l.id}</div>
+               <div class="text-xs text-slate-500">${l.date}</div>
+             </td>
+             <td class="px-6 py-4">
+               <div class="font-medium">${l.name}</div>
+               <div class="text-xs text-slate-500">${l.email}</div>
+             </td>
+             <td class="px-6 py-4">
+               <div class="font-medium">${l.itemType}</div>
+               <div class="text-xs text-slate-500">${l.brand} ${l.condition}</div>
+               <div class="text-xs text-indigo-600 font-bold">Est: ${fmt(l.estValue)}</div>
+             </td>
+             <td class="px-6 py-4">
+               <div class="font-bold">${fmt(l.amount)}</div>
+               <div class="text-xs text-slate-500">Due: ${fmt(l.total)}</div>
+               <div class="text-xs text-emerald-600">Paid: ${fmt(l.paidSoFar)}</div>
+             </td>
+             <td class="px-6 py-4">
+               <span class="px-2 py-1 rounded-full text-xs font-bold ${badge}">${l.status}</span>
+             </td>
+             <td class="px-6 py-4 text-right">
+               ${actions}
+             </td>
+            </tr>`;
+        });
+    }
+    
+    // MODAL FUNCTIONS
+    function openModal(modalId) {
+      document.getElementById(modalId).classList.remove('hidden');
+    }
+    
+    function closeModal(modalId) {
+      document.getElementById(modalId).classList.add('hidden');
+      // Reset form if it's the loan modal
+      if (modalId === 'loanModal') {
+        document.querySelector('#loanModal form').reset();
+      }
+    }
+    
+    // LOAN CREATION
+    function handleCreate(event) {
+      event.preventDefault();
+      const btn = document.getElementById('btn-create');
+      btn.disabled = true;
+      btn.innerHTML = 'Creating...';
+      
+      const formData = new FormData(event.target);
+      const data = Object.fromEntries(formData);
+      
+      // Handle file upload
+      const fileInput = document.getElementById('evidenceFile');
+      if (fileInput.files.length > 0) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          data.imageFile = e.target.result;
+          data.imageName = fileInput.files[0].name;
+          submitLoan(data);
+        };
+        reader.readAsDataURL(fileInput.files[0]);
+      } else {
+        submitLoan(data);
+      }
+    }
+    
+    function submitLoan(data) {
+      google.script.run
+        .withSuccessHandler(response => {
+          if (response.success) {
+            Swal.fire('Success', response.message, 'success');
+            closeModal('loanModal');
+            refreshData();
+          } else {
+            Swal.fire('Error', response.message, 'error');
+          }
+          document.getElementById('btn-create').disabled = false;
+          document.getElementById('btn-create').innerHTML = 'Create';
+        })
+        .withFailureHandler(err => {
+          Swal.fire('Error', 'Creation failed: ' + err.message, 'error');
+          document.getElementById('btn-create').disabled = false;
+          document.getElementById('btn-create').innerHTML = 'Create';
+        })
+        .createLoan(data, sessionToken);
+    }
+    
+    // PAYMENT FUNCTIONS
+    function openPay(id) {
+      document.getElementById('pay-id').value = id;
+      document.getElementById('pay-amt').value = '';
+      openModal('payModal');
+    }
+    
+    function submitPayment() {
+      const id = document.getElementById('pay-id').value;
+      const amount = document.getElementById('pay-amt').value;
+      
+      if (!amount || amount <= 0) {
+        Swal.fire('Error', 'Please enter a valid amount', 'warning');
+        return;
+      }
+      
+      google.script.run
+        .withSuccessHandler(response => {
+          if (response.success) {
+            Swal.fire('Success', 'Payment recorded', 'success');
+            closeModal('payModal');
+            refreshData();
+          } else {
+            Swal.fire('Error', 'Payment failed', 'error');
+          }
+        })
+        .withFailureHandler(err => {
+          Swal.fire('Error', 'Payment failed: ' + err.message, 'error');
+        })
+        .addPayment(id, amount, sessionToken);
+    }
+    
+    // EXTENSION FUNCTIONS
+    function openExt(id) {
+      document.getElementById('ext-id').value = id;
+      document.getElementById('ext-mo').value = '';
+      document.getElementById('ext-fee').value = '';
+      openModal('extModal');
+    }
+    
+    function submitExtension() {
+      const id = document.getElementById('ext-id').value;
+      const months = document.getElementById('ext-mo').value;
+      const fee = document.getElementById('ext-fee').value;
+      
+      if (!months || !fee) {
+        Swal.fire('Error', 'Please fill all fields', 'warning');
+        return;
+      }
+      
+      google.script.run
+        .withSuccessHandler(response => {
+          if (response.success) {
+            Swal.fire('Success', 'Extension added', 'success');
+            closeModal('extModal');
+            refreshData();
+          } else {
+            Swal.fire('Error', 'Extension failed', 'error');
+          }
+        })
+        .withFailureHandler(err => {
+          Swal.fire('Error', 'Extension failed: ' + err.message, 'error');
+        })
+        .extendLoan(id, months, fee, sessionToken);
+    }
+    
+    // LIQUIDATION FUNCTIONS
+    function openSell(id, principal, paid) {
+      document.getElementById('sell-id').value = id;
+      document.getElementById('sell-principal').innerText = fmt(principal);
+      document.getElementById('sell-paid').innerText = fmt(paid);
+      document.getElementById('sell-price').value = '';
+      openModal('sellModal');
+    }
+    
+    function submitLiquidation() {
+      const id = document.getElementById('sell-id').value;
+      const price = document.getElementById('sell-price').value;
+      
+      if (!price || price <= 0) {
+        Swal.fire('Error', 'Please enter a valid sale price', 'warning');
+        return;
+      }
+      
+      google.script.run
+        .withSuccessHandler(response => {
+          if (response.success) {
+            const message = response.profit ? 
+              `Asset sold! Profit: ${fmt(response.amount)}` : 
+              `Asset sold! Loss: ${fmt(response.amount)}`;
+            Swal.fire('Success', message, 'success');
+            closeModal('sellModal');
+            refreshData();
+          } else {
+            Swal.fire('Error', response.message || 'Sale failed', 'error');
+          }
+        })
+        .withFailureHandler(err => {
+          Swal.fire('Error', 'Sale failed: ' + err.message, 'error');
+        })
+        .liquidateLoan(id, price, sessionToken);
+    }
+    
+    // STATUS FUNCTIONS
+    function setStatus(id, status) {
+      if (status === 'Defaulted') {
+        Swal.fire({
+          title: 'Default Loan?',
+          text: 'This will mark the loan as defaulted and enable liquidation.',
+          icon: 'warning',
+          showCancelButton: true,
+          confirmButtonText: 'Yes, default it'
+        }).then((result) => {
+          if (result.isConfirmed) {
+            google.script.run
+              .withSuccessHandler(response => {
+                if (response.success) {
+                  Swal.fire('Success', 'Loan defaulted', 'success');
+                  refreshData();
+                } else {
+                  Swal.fire('Error', response.message, 'error');
+                }
+              })
+              .withFailureHandler(err => {
+                Swal.fire('Error', 'Status update failed: ' + err.message, 'error');
+              })
+              .updateLoanStatus(id, status, sessionToken);
+          }
+        });
+      } else {
+        google.script.run
+          .withSuccessHandler(response => {
+            if (response.success) {
+              refreshData();
+            } else {
+              Swal.fire('Error', response.message, 'error');
+            }
+          })
+          .withFailureHandler(err => {
+            Swal.fire('Error', 'Status update failed: ' + err.message, 'error');
+          })
+          .updateLoanStatus(id, status, sessionToken);
+      }
+    }
+    
+    // QR CODE FUNCTIONS
+    function openQr(id, itemType) {
+      const qrContainer = document.getElementById('qr-code');
+      qrContainer.innerHTML = '';
+      
+      new QRCode(qrContainer, {
+        text: id,
+        width: 128,
+        height: 128
+      });
+      
+      document.getElementById('qr-text').innerText = `${id} - ${itemType}`;
+      openModal('qrModal');
+    }
+    
+    function printQr() {
+      const printWindow = window.open('', '_blank');
+      const qrCode = document.getElementById('qr-code').innerHTML;
+      const qrText = document.getElementById('qr-text').innerText;
+      
+      printWindow.document.write(`
+        <html>
+          <head>
+            <title>QR Label</title>
+            <style>
+              body { margin: 0; padding: 10px; font-family: monospace; }
+              .label { text-align: center; width: 200px; }
+              .qr { margin-bottom: 5px; }
+              .text { font-size: 12px; font-weight: bold; }
+            </style>
+          </head>
+          <body>
+            <div class="label">
+              <div class="qr">${qrCode}</div>
+              <div class="text">${qrText}</div>
+            </div>
+          </body>
+        </html>
+      `);
+      
+      printWindow.document.close();
+      printWindow.print();
+    }
+    
+    // VAULT FUNCTIONS
+    function loadVault() {
+      google.script.run
+        .withSuccessHandler(renderVault)
+        .withFailureHandler(handleSessionError)
+        .getVaultInventory(sessionToken);
+    }
+    
+    function renderVault(inventory) {
+      const grid = document.getElementById('vault-grid');
+      const totalValue = document.getElementById('vault-total-value');
+      
+      grid.innerHTML = '';
+      let total = 0;
+      
+      inventory.forEach(item => {
+        total += item.estValue;
+        grid.innerHTML += `
+          <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+            <div class="font-bold text-indigo-600">${item.id}</div>
+            <div class="font-medium">${item.itemType}</div>
+            <div class="text-sm text-slate-500">${item.brand} ${item.condition}</div>
+            <div class="text-sm text-slate-500">${item.serial || 'No serial'}</div>
+            <div class="mt-2 text-lg font-bold text-indigo-600">${fmt(item.estValue)}</div>
+            <div class="text-xs text-slate-500">Principal: ${fmt(item.principal)}</div>
+            <div class="mt-2">
+              <span class="px-2 py-1 rounded-full text-xs font-bold ${
+                item.status === 'Active' ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'
+              }">${item.status}</span>
+            </div>
+          </div>
+        `;
+      });
+      
+      totalValue.innerText = fmt(total);
+    }
+    
+    // PENDING APPLICATIONS
+    function loadPending() {
+      google.script.run
+        .withSuccessHandler(renderPending)
+        .withFailureHandler(handleSessionError)
+        .getPendingApps(sessionToken);
+    }
+    
+    function renderPending(applications) {
+      const tbody = document.getElementById('pending-table');
+      const emptyState = document.getElementById('empty-pending');
+      
+      tbody.innerHTML = '';
+      
+      if (applications.length === 0) {
+        emptyState.classList.remove('hidden');
+        return;
+      }
+      
+      emptyState.classList.add('hidden');
+      
+      applications.forEach(app => {
+        tbody.innerHTML += `
+          <tr class="border-b hover:bg-indigo-50/30">
+            <td class="px-6 py-4">
+              <div class="font-medium">${app.name}</div>
+              <div class="text-xs text-slate-500">${app.email}</div>
+              <div class="text-xs text-slate-500">${app.phone}</div>
+            </td>
+            <td class="px-6 py-4">
+              <div class="font-medium">${app.itemType}</div>
+              <div class="text-xs text-slate-500">${app.brand}</div>
+            </td>
+            <td class="px-6 py-4">
+              <div class="font-bold">${fmt(app.requestedAmount)}</div>
+              <div class="text-xs text-slate-500">${app.requestedDuration} months</div>
+            </td>
+            <td class="px-6 py-4 text-right">
+              <button onclick="reviewApp(${app.rowIndex})" class="bg-indigo-600 text-white px-3 py-1 rounded text-sm font-bold">Review</button>
+            </td>
+          </tr>
+        `;
+      });
+    }
+    
+    function reviewApp(rowIndex) {
+      google.script.run
+        .withSuccessHandler(appData => {
+          document.getElementById('rev-idx').value = rowIndex;
+          document.getElementById('rev-amt').value = appData.requestedAmount;
+          document.getElementById('rev-rate').value = '15';
+          document.getElementById('rev-dur').value = appData.requestedDuration;
+          openModal('reviewModal');
+        })
+        .withFailureHandler(err => {
+          Swal.fire('Error', 'Failed to load application: ' + err.message, 'error');
+        })
+        .getPendingApp(rowIndex, sessionToken);
+    }
+    
+    function confirmApproval() {
+      const rowIndex = document.getElementById('rev-idx').value;
+      const amount = document.getElementById('rev-amt').value;
+      const rate = document.getElementById('rev-rate').value;
+      const duration = document.getElementById('rev-dur').value;
+      
+      if (!amount || !rate || !duration) {
+        Swal.fire('Error', 'Please fill all fields', 'warning');
+        return;
+      }
+      
+      google.script.run
+        .withSuccessHandler(response => {
+          if (response.success) {
+            Swal.fire('Success', 'Loan approved and created', 'success');
+            closeModal('reviewModal');
+            loadPending();
+            refreshData();
+          } else {
+            Swal.fire('Error', response.message, 'error');
+          }
+        })
+        .withFailureHandler(err => {
+          Swal.fire('Error', 'Approval failed: ' + err.message, 'error');
+        })
+        .approveApplication(rowIndex, { amount, rate, duration }, sessionToken);
+    }
+    
+    // SEARCH AND FILTER
+    function filterTable() {
+      const searchTerm = document.getElementById('globalSearch').value.toLowerCase();
+      const filteredLoans = allLoans.filter(loan => {
+        return loan.id.toLowerCase().includes(searchTerm) ||
+               loan.name.toLowerCase().includes(searchTerm) ||
+               loan.email.toLowerCase().includes(searchTerm) ||
+               loan.itemType.toLowerCase().includes(searchTerm) ||
+               loan.brand.toLowerCase().includes(searchTerm) ||
+               (loan.serial && loan.serial.toLowerCase().includes(searchTerm)) ||
+               loan.condition.toLowerCase().includes(searchTerm);
+      });
+      renderTable(filteredLoans);
+    }
+    
+    // CUSTOMER HISTORY
+    function showCustomerHistory(email) {
+      google.script.run
+        .withSuccessHandler(data => {
+          document.getElementById('cName').innerText = email;
+          document.getElementById('cScore').innerText = calculateScore(data.stats);
+          document.getElementById('cActive').innerText = data.stats.activeCount;
+          document.getElementById('cDebt').innerText = fmt(data.stats.currentExposure);
+          
+          const historyDiv = document.getElementById('cHistory');
+          historyDiv.innerHTML = '';
+          
+          data.history.forEach(record => {
+            const badge = record.status === 'Paid' ? 'bg-blue-100 text-blue-700' :
+                         record.status === 'Active' ? 'bg-emerald-100 text-emerald-700' :
+                         record.status === 'Defaulted' ? 'bg-red-100 text-red-700' :
+                         'bg-purple-100 text-purple-700';
+            
+            historyDiv.innerHTML += `
+              <div class="mb-2 p-2 bg-slate-50 rounded">
+                <div class="flex justify-between">
+                  <span class="font-medium">${record.item}</span>
+                  <span class="px-2 py-1 rounded text-xs ${badge}">${record.status}</span>
+                </div>
+                <div class="text-xs text-slate-500">
+                  ${new Date(record.date).toLocaleDateString()} - ${fmt(record.amount)}
+                </div>
+              </div>
+            `;
+          });
+          
+          openModal('custModal');
+        })
+        .withFailureHandler(err => {
+          Swal.fire('Error', 'Failed to load customer history: ' + err.message, 'error');
+        })
+        .getCustomerHistory(email, sessionToken);
+    }
+    
+    function calculateScore(stats) {
+      let score = 50; // Base score
+      
+      // Reward for paid loans
+      score += stats.paid * 10;
+      
+      // Penalty for defaults
+      score -= stats.defaulted * 30;
+      
+      // Bonus for multiple active loans in good standing
+      if (stats.activeCount > 0 && stats.defaulted === 0) {
+        score += stats.activeCount * 5;
+      }
+      
+      return Math.max(0, Math.min(100, score));
+    }
+    
+    function toggleLoginPassword() {
+      const input = document.getElementById('loginPass');
+      if (!input) return;
+      input.type = input.type === 'password' ? 'text' : 'password';
+      const btn = document.querySelector('[onclick="toggleLoginPassword()"]');
+      if (btn) btn.innerText = input.type === 'password' ? 'Show' : 'Hide';
+    }
+    
+    // Initialize session from localStorage
+    window.addEventListener('load', () => {
+      const savedToken = localStorage.getItem('sessionToken');
+      const savedEmail = localStorage.getItem('userEmail');
+      const savedRole = localStorage.getItem('userRole');
+      
+      if (savedToken && savedEmail && savedRole) {
+        sessionToken = savedToken;
+        userEmail = savedEmail;
+        userRole = savedRole;
+        initApp();
+      }
+    });
+  </script>
+</body>
+</html>
