@@ -562,9 +562,9 @@ function getPendingApp(rowIndex, sessionToken) {
   const r = ws.getRange(rowIndex, 1, 1, ws.getLastColumn()).getValues()[0];
   return {
     rowIndex: rowIndex,
-    requestedAmount: r[10],
-    requestedDuration: r[11],
-    photoUrl: r[12]
+    requestedAmount: r[10], // Condition column (index 10)
+    requestedDuration: r[11], // Requested Duration column (index 11)
+    photoUrl: r[12] // Photo column (index 12)
   };
 }
 
@@ -577,9 +577,9 @@ function approveApplication(idx, fd, sessionToken) {
   const r = ws.getRange(idx, 1, 1, ws.getLastColumn()).getValues()[0];
   
   // Use the requested amount from the application, not from approval form
-  const principal = parseFloat(r[10]); // requestedAmount column
+  const principal = parseFloat(r[11]); // requestedAmount column (index 11)
   const rate = parseFloat(fd.rate) || 15; // default 15% if not specified
-  const months = parseInt(r[11]); // requestedDuration column
+  const months = parseInt(r[12]); // requestedDuration column (index 12)
   const interest = principal * (rate / 100) * months;
   const total = principal + interest;
   
@@ -597,12 +597,12 @@ function approveApplication(idx, fd, sessionToken) {
     itemType: r[7], 
     brand: r[8], 
     serial: r[9] || "", 
-    condition: r[10], 
+    condition: r[10], // Condition column (index 10)
     amount: principal, // Use the requested amount
     rate: rate, 
     duration: months, // Use the requested duration
     estValue: principal * 1.5, // Standard 1.5x multiplier
-    photoUrl: r[13],
+    photoUrl: r[13], // Photo column (index 13)
     // Additional data needed for createLoan
     imageFile: r[14], // imageFile if present
     imageName: r[15]  // imageName if present
