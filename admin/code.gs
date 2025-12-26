@@ -260,7 +260,12 @@ function getStats(sessionToken) {
       let dateStr = "N/A";
       let rowDate = new Date();
       try {
-        rowDate = new Date(row[18]);
+        // Handle both Date objects and ISO strings
+        if (typeof row[18] === 'string') {
+          rowDate = new Date(row[18]);
+        } else {
+          rowDate = new Date(row[18]);
+        }
         if (!isNaN(rowDate.getTime())) {
           dateStr = rowDate.toLocaleDateString();
         }
@@ -359,7 +364,7 @@ function createLoan(formData, sessionToken) {
       "Active", formData.itemType, formData.brand, formData.serial || "", 
       formData.condition, estValue, formData.nationalId, formData.phone, 
       formData.email, formData.address, formData.country || "", "Generating...", "Uploading...", 
-      dueDate, 0, 0, "", 0, ""
+      dueDate.toISOString(), 0, 0, "", 0, ""
     ]);
     
     const rowIndex = ws.getLastRow();
