@@ -1002,6 +1002,37 @@
       if (btn) btn.innerText = input.type === 'password' ? 'Show' : 'Hide';
     }
     
+    // Inactivity tracking - 2 hour timeout
+    let inactivityTimer;
+    const INACTIVITY_TIMEOUT = 2 * 60 * 60 * 1000; // 2 hours in milliseconds
+    
+    function resetInactivityTimer() {
+      clearTimeout(inactivityTimer);
+      inactivityTimer = setTimeout(() => {
+        Swal.fire({
+          title: 'Session Expired',
+          text: 'You have been inactive for 2 hours. Please log in again.',
+          icon: 'warning',
+          confirmButtonColor: '#4f46e5',
+          allowOutsideClick: false,
+          allowEscapeKey: false
+        }).then(() => {
+          logout();
+        });
+      }, INACTIVITY_TIMEOUT);
+    }
+    
+    // Track user activity
+    function trackActivity() {
+      resetInactivityTimer();
+    }
+    
+    // Add activity listeners
+    document.addEventListener('click', trackActivity);
+    document.addEventListener('keypress', trackActivity);
+    document.addEventListener('scroll', trackActivity);
+    document.addEventListener('mousemove', trackActivity);
+    
     // Initialize session from localStorage
     window.addEventListener('load', () => {
       const savedToken = localStorage.getItem('sessionToken');
@@ -1013,6 +1044,7 @@
         userEmail = savedEmail;
         userRole = savedRole;
         initApp();
+        resetInactivityTimer(); // Start inactivity tracking
       }
     });
   </script>
