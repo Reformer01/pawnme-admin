@@ -655,7 +655,7 @@
              <td class="px-6 py-4">
                <div class="font-bold">${fmt(l.amount)}</div>
                <div class="text-xs text-slate-500">Due: ${fmt(l.total)}</div>
-               <div class="text-xs text-emerald-600">Paid: ${fmt(l.paidSoFar)}</div>
+               ${l.paidSoFar > 0 ? `<div class="text-xs text-emerald-600">Paid: ${fmt(l.paidSoFar)}</div>` : ''}
              </td>
              <td class="px-6 py-4">
                <span class="px-2 py-1 rounded-full text-xs font-bold ${badge}">${l.status}</span>

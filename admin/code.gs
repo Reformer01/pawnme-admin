@@ -261,7 +261,9 @@ function getStats(sessionToken) {
       let rowDate = new Date();
       try {
         rowDate = new Date(row[18]);
-        dateStr = rowDate.toLocaleDateString();
+        if (!isNaN(rowDate.getTime())) {
+          dateStr = rowDate.toLocaleDateString();
+        }
       } catch(e) {}
 
       const isRecent = rowDate >= oneWeekAgo;
