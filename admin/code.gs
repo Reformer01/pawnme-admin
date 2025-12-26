@@ -562,9 +562,19 @@ function getPendingApp(rowIndex, sessionToken) {
   const r = ws.getRange(rowIndex, 1, 1, ws.getLastColumn()).getValues()[0];
   return {
     rowIndex: rowIndex,
-    requestedAmount: r[10], // Condition column (index 10)
-    requestedDuration: r[11], // Requested Duration column (index 11)
-    photoUrl: r[12] // Photo column (index 12)
+    name: r[1],
+    email: r[2],
+    phone: r[3],
+    nationalId: r[4],
+    address: r[5],
+    country: r[6],
+    itemType: r[7],
+    brand: r[8],
+    serial: r[9] || "",
+    condition: r[10],
+    requestedAmount: r[11],
+    requestedDuration: r[12],
+    photoUrl: r[13]
   };
 }
 

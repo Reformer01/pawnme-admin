@@ -295,19 +295,136 @@
   </div>
 
   <div id="reviewModal" class="hidden fixed inset-0 z-50 bg-slate-900/50 flex items-center justify-center p-4">
-    <div class="bg-white w-full max-w-sm rounded-2xl shadow-2xl p-6">
-      <h3 class="font-bold text-lg mb-4">Review Offer</h3>
+    <div class="bg-white w-full max-w-2xl rounded-2xl shadow-2xl p-6 max-h-[90vh] overflow-y-auto">
+      <h3 class="font-bold text-xl mb-4">Review Loan Application</h3>
       <input type="hidden" id="rev-idx">
-      <div class="space-y-3">
-        <label class="text-xs font-bold text-slate-500">Approved Amount</label>
-        <input type="number" id="rev-amt" class="w-full p-3 border rounded-xl font-bold text-indigo-600">
-        <div class="grid grid-cols-2 gap-2">
-          <input type="number" id="rev-rate" class="p-3 border rounded-xl" placeholder="Rate">
-          <input type="number" id="rev-dur" class="p-3 border rounded-xl" placeholder="Months">
+      
+      <!-- Customer Information -->
+      <div class="mb-6">
+        <h4 class="font-bold text-slate-700 mb-3 flex items-center">
+          <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+            <path d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"/>
+          </svg>
+          Customer Information
+        </h4>
+        <div class="grid grid-cols-2 gap-3 bg-slate-50 p-3 rounded-lg">
+          <div>
+            <div class="text-xs text-slate-500">Name</div>
+            <div id="rev-name" class="font-medium"></div>
+          </div>
+          <div>
+            <div class="text-xs text-slate-500">Email</div>
+            <div id="rev-email" class="font-medium text-sm"></div>
+          </div>
+          <div>
+            <div class="text-xs text-slate-500">Phone</div>
+            <div id="rev-phone" class="font-medium"></div>
+          </div>
+          <div>
+            <div class="text-xs text-slate-500">National ID</div>
+            <div id="rev-nationalId" class="font-medium"></div>
+          </div>
+          <div class="col-span-2">
+            <div class="text-xs text-slate-500">Address</div>
+            <div id="rev-address" class="font-medium"></div>
+          </div>
         </div>
       </div>
-      <button onclick="confirmApproval()" class="w-full mt-4 bg-indigo-600 text-white py-3 rounded-xl font-bold">Approve</button>
-      <button onclick="closeModal('reviewModal')" class="w-full mt-2 text-slate-400">Cancel</button>
+
+      <!-- Collateral Information -->
+      <div class="mb-6">
+        <h4 class="font-bold text-slate-700 mb-3 flex items-center">
+          <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+            <path d="M7 3a1 1 0 000 2h6a1 1 0 100-2H7zM4 7a1 1 0 011-1h10a1 1 0 110 2H5a1 1 0 01-1-1zM2 11a2 2 0 012-2h12a2 2 0 012 2v4a2 2 0 01-2 2H4a2 2 0 01-2-2v-4z"/>
+          </svg>
+          Collateral Details
+        </h4>
+        <div class="grid grid-cols-2 gap-3 bg-slate-50 p-3 rounded-lg">
+          <div>
+            <div class="text-xs text-slate-500">Item Type</div>
+            <div id="rev-itemType" class="font-medium"></div>
+          </div>
+          <div>
+            <div class="text-xs text-slate-500">Brand</div>
+            <div id="rev-brand" class="font-medium"></div>
+          </div>
+          <div>
+            <div class="text-xs text-slate-500">Serial Number</div>
+            <div id="rev-serial" class="font-medium"></div>
+          </div>
+          <div>
+            <div class="text-xs text-slate-500">Condition</div>
+            <div id="rev-condition" class="font-medium"></div>
+          </div>
+          <div class="col-span-2">
+            <div class="text-xs text-slate-500">Estimated Value</div>
+            <div id="rev-estValue" class="font-bold text-lg text-green-600"></div>
+          </div>
+          <div class="col-span-2" id="rev-photo-container">
+            <div class="text-xs text-slate-500">Collateral Photo</div>
+            <img id="rev-photo" src="" alt="Collateral" class="w-32 h-32 object-cover rounded-lg border">
+          </div>
+        </div>
+      </div>
+
+      <!-- Loan Terms -->
+      <div class="mb-6">
+        <h4 class="font-bold text-slate-700 mb-3 flex items-center">
+          <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+            <path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.305 2.305 0 01-.567-.267C8.07 8.34 8 8.114 8 8c0-.114.07-.34.433-.582zM11 12.849v-1.698c.22.071.412.164.567.267.364.243.433.468.433.582 0 .114-.07.34-.433.582a2.305 2.305 0 01-.567.267z"/>
+            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v.092a4.535 4.535 0 00-1.676.662C6.602 6.234 6 6.723 6 7.998c0 1.273.602 1.764 1.324 2.242A4.535 4.535 0 009 11.09V12a1 1 0 102 0v-.91a4.535 4.535 0 001.676-.662C13.398 9.766 14 9.277 14 8.002c0-1.275-.602-1.764-1.324-2.242A4.535 4.535 0 0011 5.09V5z" clip-rule="evenodd"/>
+          </svg>
+          Loan Terms
+        </h4>
+        <div class="grid grid-cols-2 gap-3 bg-slate-50 p-3 rounded-lg">
+          <div>
+            <div class="text-xs text-slate-500">Requested Amount</div>
+            <div id="rev-requestedAmount" class="font-bold text-lg text-blue-600"></div>
+          </div>
+          <div>
+            <div class="text-xs text-slate-500">Requested Duration</div>
+            <div id="rev-requestedDuration" class="font-medium"></div>
+          </div>
+          <div>
+            <label class="text-xs font-bold text-slate-500">Approved Amount</label>
+            <input type="number" id="rev-amt" class="w-full p-2 border rounded-lg font-bold text-indigo-600">
+          </div>
+          <div>
+            <label class="text-xs font-bold text-slate-500">Interest Rate (%)</label>
+            <input type="number" id="rev-rate" class="w-full p-2 border rounded-lg" placeholder="15" step="0.1">
+          </div>
+          <div>
+            <label class="text-xs font-bold text-slate-500">Duration (months)</label>
+            <input type="number" id="rev-dur" class="w-full p-2 border rounded-lg" placeholder="3">
+          </div>
+          <div>
+            <div class="text-xs text-slate-500">Total Repayment</div>
+            <div id="rev-total" class="font-bold text-lg text-purple-600"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Risk Assessment -->
+      <div class="mb-6">
+        <h4 class="font-bold text-slate-700 mb-3 flex items-center">
+          <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+          </svg>
+          Risk Assessment
+        </h4>
+        <div class="bg-amber-50 border border-amber-200 p-3 rounded-lg">
+          <div class="text-sm text-amber-800">
+            <div class="font-medium mb-1">Loan-to-Value Ratio:</div>
+            <div id="rev-ltv" class="font-bold text-lg"></div>
+            <div class="text-xs mt-1 text-amber-600">Recommended: Maximum 70% of collateral value</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex gap-3">
+        <button onclick="confirmApproval()" class="flex-1 bg-indigo-600 text-white py-3 rounded-xl font-bold">Approve Loan</button>
+        <button onclick="closeModal('reviewModal')" class="flex-1 bg-slate-200 text-slate-700 py-3 rounded-xl font-bold">Cancel</button>
+      </div>
     </div>
   </div>
 
@@ -883,10 +1000,44 @@
     function reviewApp(rowIndex) {
       google.script.run
         .withSuccessHandler(appData => {
+          // Set basic values
           document.getElementById('rev-idx').value = rowIndex;
           document.getElementById('rev-amt').value = appData.requestedAmount;
           document.getElementById('rev-rate').value = '15';
           document.getElementById('rev-dur').value = appData.requestedDuration;
+          
+          // Populate customer information
+          document.getElementById('rev-name').innerText = appData.name || '';
+          document.getElementById('rev-email').innerText = appData.email || '';
+          document.getElementById('rev-phone').innerText = appData.phone || '';
+          document.getElementById('rev-nationalId').innerText = appData.nationalId || '';
+          document.getElementById('rev-address').innerText = appData.address || '';
+          
+          // Populate collateral information
+          document.getElementById('rev-itemType').innerText = appData.itemType || '';
+          document.getElementById('rev-brand').innerText = appData.brand || '';
+          document.getElementById('rev-serial').innerText = appData.serial || 'N/A';
+          document.getElementById('rev-condition').innerText = appData.condition || '';
+          
+          // Calculate estimated value (1.5x requested amount as default)
+          const estValue = appData.requestedAmount * 1.5;
+          document.getElementById('rev-estValue').innerText = fmt(estValue);
+          
+          // Populate requested amounts
+          document.getElementById('rev-requestedAmount').innerText = fmt(appData.requestedAmount);
+          document.getElementById('rev-requestedDuration').innerText = appData.requestedDuration + ' months';
+          
+          // Handle photo
+          if (appData.photoUrl && appData.photoUrl !== '') {
+            document.getElementById('rev-photo').src = appData.photoUrl;
+            document.getElementById('rev-photo-container').style.display = 'block';
+          } else {
+            document.getElementById('rev-photo-container').style.display = 'none';
+          }
+          
+          // Calculate initial totals and LTV
+          calculateLoanTotals();
+          
           openModal('reviewModal');
         })
         .withFailureHandler(err => {
@@ -894,6 +1045,46 @@
         })
         .getPendingApp(rowIndex, sessionToken);
     }
+    
+    function calculateLoanTotals() {
+      const amount = parseFloat(document.getElementById('rev-amt').value) || 0;
+      const rate = parseFloat(document.getElementById('rev-rate').value) || 15;
+      const duration = parseInt(document.getElementById('rev-dur').value) || 3;
+      const estValueText = document.getElementById('rev-estValue').innerText;
+      const estValue = parseFloat(estValueText.replace(/[^\d.]/g, '')) || 0;
+      
+      // Calculate interest and total
+      const interest = amount * (rate / 100) * duration;
+      const total = amount + interest;
+      
+      // Update total display
+      document.getElementById('rev-total').innerText = fmt(total);
+      
+      // Calculate LTV ratio
+      const ltv = estValue > 0 ? (amount / estValue * 100) : 0;
+      const ltvElement = document.getElementById('rev-ltv');
+      ltvElement.innerText = ltv.toFixed(1) + '%';
+      
+      // Color code LTV based on risk
+      if (ltv > 70) {
+        ltvElement.className = 'font-bold text-lg text-red-600';
+      } else if (ltv > 50) {
+        ltvElement.className = 'font-bold text-lg text-amber-600';
+      } else {
+        ltvElement.className = 'font-bold text-lg text-green-600';
+      }
+    }
+    
+    // Add event listeners for real-time calculations
+    document.addEventListener('DOMContentLoaded', () => {
+      const revAmt = document.getElementById('rev-amt');
+      const revRate = document.getElementById('rev-rate');
+      const revDur = document.getElementById('rev-dur');
+      
+      if (revAmt) revAmt.addEventListener('input', calculateLoanTotals);
+      if (revRate) revRate.addEventListener('input', calculateLoanTotals);
+      if (revDur) revDur.addEventListener('input', calculateLoanTotals);
+    });
     
     function confirmApproval() {
       const rowIndex = document.getElementById('rev-idx').value;
@@ -906,6 +1097,30 @@
         return;
       }
       
+      // Validate LTV ratio
+      const estValueText = document.getElementById('rev-estValue').innerText;
+      const estValue = parseFloat(estValueText.replace(/[^\d.]/g, '')) || 0;
+      const ltv = estValue > 0 ? (amount / estValue * 100) : 0;
+      
+      if (ltv > 70) {
+        Swal.fire({
+          title: 'High Risk Loan',
+          text: `Loan-to-value ratio is ${ltv.toFixed(1)}%. Recommended maximum is 70%. Continue anyway?`,
+          icon: 'warning',
+          showCancelButton: true,
+          confirmButtonText: 'Yes, approve anyway',
+          cancelButtonText: 'No, cancel'
+        }).then((result) => {
+          if (result.isConfirmed) {
+            proceedWithApproval(rowIndex, { amount, rate, duration });
+          }
+        });
+      } else {
+        proceedWithApproval(rowIndex, { amount, rate, duration });
+      }
+    }
+    
+    function proceedWithApproval(rowIndex, loanData) {
       google.script.run
         .withSuccessHandler(response => {
           if (response.success) {
@@ -920,7 +1135,7 @@
         .withFailureHandler(err => {
           Swal.fire('Error', 'Approval failed: ' + err.message, 'error');
         })
-        .approveApplication(rowIndex, { amount, rate, duration }, sessionToken);
+        .approveApplication(rowIndex, loanData, sessionToken);
     }
     
     // SEARCH AND FILTER
