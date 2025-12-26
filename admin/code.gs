@@ -586,10 +586,10 @@ function approveApplication(idx, fd, sessionToken) {
   const ws = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_PENDING);
   const r = ws.getRange(idx, 1, 1, ws.getLastColumn()).getValues()[0];
   
-  // Use the requested amount from the application, not from approval form
-  const principal = parseFloat(r[11]); // requestedAmount column (index 11)
-  const rate = parseFloat(fd.rate) || 15; // default 15% if not specified
-  const months = parseInt(r[12]); // requestedDuration column (index 12)
+  // Use the actual approved values from the form, or fall back to requested values
+  const principal = parseFloat(fd.amount) || parseFloat(r[11]); // Use approved amount or requested amount
+  const rate = parseFloat(fd.rate) || 15; // Use approved rate or default 15%
+  const months = parseInt(fd.duration) || parseInt(r[12]); // Use approved duration or requested duration
   const interest = principal * (rate / 100) * months;
   const total = principal + interest;
   
@@ -608,9 +608,9 @@ function approveApplication(idx, fd, sessionToken) {
     brand: r[8], 
     serial: r[9] || "", 
     condition: r[10], // Condition column (index 10)
-    amount: principal, // Use the requested amount
+    amount: principal, // Use the approved amount
     rate: rate, 
-    duration: months, // Use the requested duration
+    duration: months, // Use the approved duration
     estValue: principal * 1.5, // Standard 1.5x multiplier
     photoUrl: r[13], // Photo column (index 13)
     // Additional data needed for createLoan
